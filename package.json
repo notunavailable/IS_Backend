@@ -1,0 +1,26 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "tests": "node -r dotenv/config tests/runner.js $npm_config_testfile $npm_config_func"
+  },
+  "dependencies": {
+    "@pinecone-database/pinecone": "^0.1.6",
+    "axios": "^1.4.0",
+    "body-parser": "^1.20.1",
+    "dotenv": "^16.1.4",
+    "express": "^4.18.2",
+    "helmet": "^6.0.1",
+    "moment": "^2.29.4",
+    "mongodb": "^4.13.0",
+    "mongoose": "^6.8.2",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.20",
+    "openai": "^3.3.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
