@@ -13,7 +13,9 @@ const ability = require('./routes/api/ability')
 const unregisteredQueue = require('./routes/api/unregisteredQueue')
 
 const app = express();
-const port = 5001;
+
+// Use environment variable for port or fallback to 5000
+const port = process.env.PORT || 5001;
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
@@ -25,6 +27,7 @@ app.use(function (req, res, next) {
     next();
 });
 
+app.enable('trust proxy');
 app.use(morgan("dev"));
 app.use(helmet());
 
@@ -37,5 +40,17 @@ app.use('/api/v1/skill', skill);
 app.use('/api/v1/attribute', attribute);
 app.use('/api/v1/ability', ability)
 app.use('/api/v1/unrQueue', unregisteredQueue)
+
+//Handle uncaught exception
+process.on('uncaughtException', function (err) {
+  console.log('Caught exception: ' + err);
+  process.exit(1);
+});
+
+//Error handling middleware
+app.use(function (err, req, res, next) {
+  console.log(err.stack);
+  res.status(500).send('Something broke!');
+});
 
 app.listen(port, () => console.log(`API Server listening on port ${port}`))
