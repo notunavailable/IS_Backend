@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "node server.js",
     "tests": "node -r dotenv/config tests/runner.js $npm_config_testfile $npm_config_func"
   },
   "dependencies": {
@@ -18,8 +18,10 @@
     "mongodb": "^4.13.0",
     "mongoose": "^6.8.2",
     "morgan": "^1.10.0",
-    "nodemon": "^2.0.20",
     "openai": "^3.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
   },
   "author": "",
   "license": "ISC"
