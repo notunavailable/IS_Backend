@@ -73,7 +73,6 @@ const addSkillXP = async ({xp, user, skillIndex}) => {
     let levelXP = await calculateLevelExp({difficultyId: user.skills[skillIndex].difficulty, currentLevel: level})
     user.skills[skillIndex].experience += xp;
     while(user.skills[skillIndex].experience >= levelXP){
-        const skill = await findById(user.skills[skillIndex].id)
         user.skills[skillIndex].experience -= levelXP;
         user.skills[skillIndex].level++;
         const difficulty = await Difficulty.findById(skill.difficulty)
