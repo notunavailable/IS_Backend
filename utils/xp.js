@@ -1,5 +1,6 @@
 const Difficulty = require("../models/Difficulty.js");
 const User = require("../models/User.js")
+const Skill = require("../models/Skill.js")
 
 const calculateLevelExp = async ({difficultyId, currentLevel}) => {
     const difficulty = await Difficulty.findOne({ difficulty: difficultyId });
@@ -73,6 +74,7 @@ const addSkillXP = async ({xp, user, skillIndex}) => {
     let levelXP = await calculateLevelExp({difficultyId: user.skills[skillIndex].difficulty, currentLevel: level})
     user.skills[skillIndex].experience += xp;
     while(user.skills[skillIndex].experience >= levelXP){
+        const skill = await Skill.findById(user.skills[skillIndex].id)
         user.skills[skillIndex].experience -= levelXP;
         user.skills[skillIndex].level++;
         const difficulty = await Difficulty.findById(skill.difficulty)
