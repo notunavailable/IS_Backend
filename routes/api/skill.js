@@ -91,17 +91,17 @@ router.put("/edit/:id", async (req, res) => {
     }).catch(err => res.status(400).json(err));
 })
 
-//Delete User by id
-router.delete('/delete/:id', async (req, res) => {
+//Delete skill by id
+router.delete('/:id', async (req, res) => {
 
     const id = req.params.id
     if (!id) {
         return res.status(400).send({ message: "No ID inputted." })
     }
 
-    const response = deleteSkill({ id: id });
-    if (!response.skill) {
-        return res.status(200).send({ message: `Deleted skill ${response.skill}` })
+    const response = await deleteSkill({ id: id });
+    if (response.success) {
+        return res.status(200).send(response.message)
     } else {
         return res.status(500).send(response.error)
     }

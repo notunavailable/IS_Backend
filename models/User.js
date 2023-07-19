@@ -11,8 +11,9 @@ const userSchema = new Schema({
   level: {type: Number, required: true, default: 0},
   experience: {type: Number, required: true, default: 0},
   systemLogs: [{
-    title: { type: String, required: true, trim: true },
-    description: { type: String, required: true, trim: true },
+    title: { type: String, required: true, trim: true},
+    description: { type: String, required: true, trim: true},
+    createdAt: { type: Date, default: Date.now, required: true },
   }],
   skillSlots: {type: Number, required: true, default: 5},
   difficulty: { type: Schema.Types.ObjectId, ref: 'Difficulty', required: true },

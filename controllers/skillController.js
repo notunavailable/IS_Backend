@@ -28,8 +28,8 @@ const deleteSkill = async ({id}) => {
         );
 
         // Delete the Skill
-        const skill = await Skill.findByIdAndDelete(id);
-        return { success: true, skill: skill, message: `Skill with id ${id} successfully deleted` };
+        await Skill.findByIdAndDelete(id);
+        return { success: true, message: `Skill with id ${id} successfully deleted` };
     } catch (error) {
         return { success: false, error: error.message };
     }

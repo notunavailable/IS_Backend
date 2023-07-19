@@ -11,8 +11,8 @@ const Queue = require('../../models/UnregisteredQueue.js')
 const Category = require("../../models/Category.js");
 
 //utils
-const { getSkillName, createSkill, createAttribute } = require("../../utils/chatgpt.js")
-const {calculateExp, calculateLevelExp, addXP} = require("../../utils/xp.js")
+const { getSkillName, createSkill, createAttribute, getSystemMessage } = require("../../utils/chatgpt.js")
+const { calculateExp, calculateLevelExp, addSkillXP } = require("../../utils/xp.js")
 
 //controllers
 const { completeSkill } = require('../../controllers/skillController.js')
@@ -107,10 +107,10 @@ router.get("/skills/:id", async (req, res) => {
             path: 'skills.id',
             model: 'Skill',
             populate: {
-              path: 'difficulty',
-              model: 'Difficulty'
+                path: 'difficulty',
+                model: 'Difficulty'
             }
-          });
+        });
         if (!user) {
             res.status(400).send({ message: "You sent an invalid id." });
         } else {
@@ -143,41 +143,55 @@ router.put("/practice/:id", async (req, res) => {
     try {
         const userId = req.params.id;
         const user = await User.findById(userId)
-        
+
         if (!user) {
             return res.status(404).send('User not found');
         }
 
         const skillId = req.body.skillId
 
-        if(!skillId) {
+        if (!skillId) {
             return res.status(404).send('No skill ID found.')
         }
 
         const skillIndex = user.skills.findIndex(skill => skill.id.toString() === skillId);
 
-        if(skillIndex === -1){
+        if (skillIndex === -1) {
             return res.status(404).send('Skill not found');
         }
-        
+
         const currentTime = new Date();
         const practiceDescription = req.body.practiceDescription;
 
         if (user.skills[skillIndex].practicing) {
             user.skills[skillIndex].practicing = false;
-            const xp = calculateExp({start: new Date(user.skills[skillIndex].lastPracticed), end: currentTime});
-            await addXP({xp: xp, user: user, skillIndex: skillIndex});
- 
-            let practiceData = {
-               start: user.skills[skillIndex].lastPracticed,
-               end: currentTime,
-               expGained: xp
+            const xp = calculateExp({ start: new Date(user.skills[skillIndex].lastPracticed), end: currentTime });
+            if (xp > 0) {
+                const currentSkillLevel = user.skills[skillIndex].level;
+                const currentLevel = user.level;
+                await addSkillXP({ xp: xp, user: user, skillIndex: skillIndex });
+                let messageReason;
+                const skill = await Skill.findById(user.skills[skillIndex].id)
+                if (currentLevel < user.level) {
+                    const levelDiff = user.level - currentLevel;
+                    messageReason = `The user has leveled up by ${levelDiff}.`
+                }
+                if (currentSkillLevel < user.skills[skillIndex].level) {
+                    const levelDiff = user.skills[skillIndex].level - currentLevel;
+                    messageReason = `The user has leveled up the skill ${skill} by ${levelDiff}. ${messageReason}`
+                }
+                messageReason = `The user has gained ${xp} experience in the skill ${skill.name}. ${messageReason}`
+                let practiceData = {
+                    start: user.skills[skillIndex].lastPracticed,
+                    end: currentTime,
+                    expGained: xp
+                }
+
+                if (practiceDescription) {
+                    practiceData.practiceDescription = practiceDescription;
+                }
+                user.skills[skillIndex].practicingLogs.push(practiceData);
             }
-            
-            if(practiceDescription){
-                practiceData.practiceDescription = practiceDescription;
-            }
-            user.skills[skillIndex].practicingLogs.push(practiceData);
 
         } else {
             user.skills[skillIndex].practicing = true;

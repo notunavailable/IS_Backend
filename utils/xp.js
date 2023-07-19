@@ -18,8 +18,8 @@ const calculateExp = ({start, end}) => {
     console.log(`Interval in Milliseconds: ${calculateTimeInMillis}`);
     console.log(`Time in Minutes: ${calculateTimeInMinutes}`);
 
-    let xp = Math.floor(calculateTimeInMinutes / 5); 
-
+    let xp = Math.floor(calculateTimeInMinutes / 3); 
+b
     console.log(`Calculated XP: ${xp}`);
     return xp;
 }
@@ -32,19 +32,19 @@ async function populateDifficulties() {
 
         // Array of difficulties to create
         const difficulties = [
-            { name: 'basic', level0: 45, multiplier: 1.1, color: "#808080" },
-            { name: 'common', level0: 45, multiplier: 1.2, color: "#A9A9A9" },
-            { name: 'uncommon', level0: 45, multiplier: 1.3, color: "#008000" },
-            { name: 'advanced', level0: 45, multiplier: 1.4, color: "#0000FF" },
-            { name: 'elite', level0: 45, multiplier: 1.5, color: "#FF8C00" },
-            { name: 'rare', level0: 45, multiplier: 1.6, color: "#800080" },
-            { name: 'epic', level0: 45, multiplier: 1.7, color: "#FF000" },
-            { name: 'legendary', level0: 45, multiplier: 1.8, color: "#FFD700" },
-            { name: 'mythical', level0: 45, multiplier: 1.9, color: "#FF00FF" },
-            { name: 'transcendent', level0: 45, multiplier: 2, color: "#F8F8FF" },
-            { name: 'divine', level0: 45, multiplier: 2.1, color: "#FFFFFF" },
-            { name: 'cosmic', level0: 45, multiplier: 2.2, color: "#4B0082" },
-            { name: 'Infinite', level0: 45, multiplier: 2.3, color: "#000000" }
+            { name: 'basic', level0: 45, multiplier: 1.1, color: "#808080", levelXP: 55 },
+            { name: 'common', level0: 45, multiplier: 1.2, color: "#A9A9A9", levelXP: 54},
+            { name: 'uncommon', level0: 45, multiplier: 1.3, color: "#008000", levelXP: 58.5},
+            { name: 'advanced', level0: 45, multiplier: 1.4, color: "#0000FF", levelXP: 63},
+            { name: 'elite', level0: 45, multiplier: 1.5, color: "#FF8C00", levelXP: 68},
+            { name: 'rare', level0: 45, multiplier: 1.6, color: "#800080", levelXP: 72},
+            { name: 'epic', level0: 45, multiplier: 1.7, color: "#FF000", levelXP: 77},
+            { name: 'legendary', level0: 45, multiplier: 1.8, color: "#FFD700", levelXP: 81},
+            { name: 'mythical', level0: 45, multiplier: 1.9, color: "#FF00FF", levelXP: 86},
+            { name: 'transcendent', level0: 45, multiplier: 2, color: "#F8F8FF", levelXP: 90},
+            { name: 'divine', level0: 45, multiplier: 2.1, color: "#FFFFFF", levelXP: 95},
+            { name: 'cosmic', level0: 45, multiplier: 2.2, color: "#4B0082", levelXP: 99},
+            { name: 'Infinite', level0: 45, multiplier: 2.3, color: "#000000", levelXP: 104}
         ];
 
         for (const diff of difficulties) {
@@ -57,15 +57,30 @@ async function populateDifficulties() {
     }
 }
 
-const addXP = async ({xp, user, skillIndex}) => {
-    const level = user.skills[skillIndex].level+1;
-    const levelXP = await calculateLevelExp({difficulty: user.skills[skillIndex].difficulty, currentLevel: level})
-    user.skills[skillIndex].experience += xp;
-    if(user.skills[skillIndex].experience >= levelXP){
-        user.skills[skillIndex].experience -= levelXP;
-        user.skills[skillIndex].level++;
+addXP = async ({user, xp}) => {
+    const currentLevel = user.level;
+    let levelXP = await calculateLevelExp({difficultyId: user.difficulty, currentLevel: currentLevel+1})
+    user.experience += xp;
+    while(user.experience >= levelXP){
+        user.experience -= levelXP;
+        user.level++;
+        levelXP = await calculateLevelExp({difficultyId: user.difficulty, currentLevel: currentLevel+1})
     }
 }
-module.exports = { calculateLevelExp, populateDifficulties, calculateExp, addXP };
+
+const addSkillXP = async ({xp, user, skillIndex}) => {
+    const level = user.skills[skillIndex].level+1;
+    let levelXP = await calculateLevelExp({difficultyId: user.skills[skillIndex].difficulty, currentLevel: level})
+    user.skills[skillIndex].experience += xp;
+    while(user.skills[skillIndex].experience >= levelXP){
+        const skill = await findById(user.skills[skillIndex].id)
+        user.skills[skillIndex].experience -= levelXP;
+        user.skills[skillIndex].level++;
+        const difficulty = await Difficulty.findById(skill.difficulty)
+        await addXP({user: user, xp: difficulty.levelXP})
+        levelXP = await calculateLevelExp({difficultyId: user.skills[skillIndex].difficulty, currentLevel: level})
+    }
+}
+module.exports = { calculateLevelExp, populateDifficulties, calculateExp, addSkillXP };
 
 

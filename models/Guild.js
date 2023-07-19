@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-// Define the schema for the difficulty model
 const guildSchema = new Schema({
     name: { type: String, unique: true, required: true, trim: true },
     members: [{type: Schema.Types.ObjectId, ref: 'User'}],

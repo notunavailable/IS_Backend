@@ -30,10 +30,11 @@ const content = `You are the system for a website that
 gamifies real-life personal progress, similar to a LitRPG 
 system. Users practice skills and gain experience points (XP) 
 based on the time spent practicing. Improving skills also improves 
-related attributes. There are five difficulty levels for XP gain: common,
- uncommon, rare, epic, and legendary. The complexity of skills 
+related attributes. There are thirteen difficulty levels for XP gain: basic, common,
+ uncommon, advanced, elite, rare, epic, legendary, mythical, transcendent, divine, cosmic, infinite. 
+ The complexity of skills 
  increases as users start with common or uncommon skills and evolve 
- them into more specific and challenging skills. So, common and uncommon 
+ them into more specific and challenging skills. So, basic, common, and uncommon 
  skills are the most general and should be created that way: not too complex, nuanced, or intricate.
 
 Users begin with a set of attributes and can add 
@@ -43,10 +44,15 @@ As they progress, they can evolve and add more skills
  affects related attributes, which gain XP in percentages 
  with each skill level-up. Users can add skills to 
  their status from the app's database, and attributes 
- appear in their status upon reaching certain levels.
+ appear in their status upon reaching certain levels. 
+
+Abilities are like skills except for the fact that they offer 
+unique access in the system like an admin createSkill ability which lets 
+someone create a skill. Or an ability that lets someone create a fake status with a different 
+name, skills, and attributes.
 
 As the system, your responsibility is to create and 
-design skills, attributes, and other elements that 
+design abilities, skills, system messages, attributes, and other elements that 
 accurately reflect real-life challenges, descriptions, 
 and affected attributes. You are like the god of this 
 game or the dungeon master in Dungeons & Dragons.`;
@@ -82,7 +88,7 @@ const createSkill = async ({ skillDescription, attributesList }) => {
                             },
                             difficulty: {
                                 type: "string",
-                                enum: ["common", "uncommon"],
+                                enum: ["basic", "common", "uncommon"],
                                 description: "The difficulty level for leveling up this skill."
                             },
                             category: {
@@ -126,6 +132,66 @@ const createSkill = async ({ skillDescription, attributesList }) => {
                         ],
                     },
                     function_call: { name: "createSkill" },
+                },
+            ],
+        });
+
+        if (completion.data.choices.length === 0) {
+            throw new Error("No response received from AI");
+        }
+
+        if (
+            completion.data.choices[0].message &&
+            completion.data.choices[0].message.function_call &&
+            completion.data.choices[0].message.function_call.arguments
+        ) {
+            const response = JSON.parse(
+                completion.data.choices[0].message.function_call.arguments
+            );
+            return response;
+        }
+        console.log(completion.data.choices);
+        console.error("Please retry. Function_call had no arguments.");
+        return;
+    } catch (err) {
+        console.error("An error occurred while creating skill", err);
+        return;
+    }
+};
+
+
+const getSystemMessage = async ({ messageReason }) => {
+    try {
+        const specifics = `${messageReason} Write a snarky and funny system message to alert the user.`;
+
+        const completion = await openai.createChatCompletion({
+            model: "gpt-4-0613",
+            messages: [
+                { role: "system", content: `${content}` },
+                { role: "user", content: `${specifics}` }
+            ],
+            functions: [
+                {
+                    name: "sendSystemMessage",
+                    description: "This function sends a system message to the user.",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            title: {
+                                type: "string",
+                                description: "An accurate name for the system message.",
+                            },
+                            description: {
+                                type: "string",
+                                description: "A funny and/or snarky description of what the user has accomplished."
+                            },
+                        },
+                        required: [
+                            "title",
+                            "description"
+                        ],
+                    },
+                    function_call: { name: "sendSystemMessage" },
                 },
             ],
         });
@@ -275,4 +341,4 @@ const determineSkill = async ({matchedSkills, createdSkill, skillDescription}) =
     }
 }
 
-module.exports = { createSkill, createAttributeList, embedding, determineSkill };
+module.exports = { createSkill, createAttributeList, embedding, determineSkill, getSystemMessage };

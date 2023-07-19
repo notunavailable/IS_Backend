@@ -19,21 +19,13 @@ const push = async ({ refModel, addition }) => {
 
 const pull = async ({refModel, id}) => {
     const existingQueue = await UnregisteredQueue.findOne({refModel: refModel});
-
     if(!existingQueue) {
         throw new Error(`Queue with path ${refModel} not found`);
     }
-    
-    if(!existingQueue.queue.includes(id)) {
-        throw new Error(`ID ${id} not found in the Queue`);
-    }
-
     // Remove the element from the queue
-    existingQueue.queue.pull(id);
-
+    await existingQueue.items.pull(id);
     // Save the updated document
     await existingQueue.save();
-
     return { success: true, message: `ID ${id} successfully removed from ${refModel} queue` };
 }
 
