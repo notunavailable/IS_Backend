@@ -19,7 +19,7 @@ const calculateExp = ({start, end}) => {
     console.log(`Time in Minutes: ${calculateTimeInMinutes}`);
 
     let xp = Math.floor(calculateTimeInMinutes / 3); 
-b
+
     console.log(`Calculated XP: ${xp}`);
     return xp;
 }
