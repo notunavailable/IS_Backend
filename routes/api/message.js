@@ -15,7 +15,7 @@ router.post("/:id", async (req, res) => {
             return res.status(404).json({ error: "No id found" })
         }
 
-        const user = User.findById(id);
+        const user = await User.findById(id);
 
         if (!user) {
             return res.status(404).json({ error: "No user found" });
@@ -43,7 +43,7 @@ router.delete("/:id", async (req, res) => {
         if(!id){
             return res.status(404).json({error: "No id found"})
         }
-        Message.findByIdAndDelete(id);
+        await Message.findByIdAndDelete(id);
     } catch (error) {
         return res.status(500).json({error: `An error occured while deleting message. ${error}`})
     }
@@ -58,7 +58,7 @@ router.put("/seen/:id", async (req, res) => {
             return res.status(404).json({ error: "No id found" })
         }
 
-        const message = Message.findById(id);
+        const message = await Message.findById(id);
 
         if (!message) {
             return res.status(404).json({ error: "No message found" });
@@ -68,6 +68,9 @@ router.put("/seen/:id", async (req, res) => {
         await message.save();
         return res.status(200).json(message);
     } catch (error) {
+        console.log(error)
         return res.status(500).json({ error: `An error occurred while changing seen property of message. ${error}` });
     }
 });
+
+module.exports = router;

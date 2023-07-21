@@ -11,6 +11,7 @@ const skill = require('./routes/api/skill');
 const attribute = require('./routes/api/attribute');
 const ability = require('./routes/api/ability')
 const unregisteredQueue = require('./routes/api/unregisteredQueue')
+const message = require('./routes/api/message')
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use('/api/v1/skill', skill);
 app.use('/api/v1/attribute', attribute);
 app.use('/api/v1/ability', ability)
 app.use('/api/v1/unrQueue', unregisteredQueue)
+app.use('/api/v1/message', message)
 
 //Handle uncaught exception
 process.on('uncaughtException', function (err) {

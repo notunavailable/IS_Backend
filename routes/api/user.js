@@ -65,6 +65,20 @@ router.post('/register', async (req, res) => {
 });
 
 
+router.get("/messages/:id", async (req, res) => {
+    const user = await User.findById(req.params.id).populate("systemLogs");
+    let messages = [];
+    for(let i = user.systemLogs.length-1; i >= 0; i--){
+        if(!user.systemLogs[i].seen){
+            messages.push(user.systemLogs[i]);
+        } else {
+            break;
+        }
+    }
+    return res.status(200).send(messages);
+})
+
+
 
 // Get User Status
 router.get("/status/:id", async (req, res) => {
