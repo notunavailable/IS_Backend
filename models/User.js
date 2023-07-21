@@ -10,11 +10,7 @@ const userSchema = new Schema({
   lastName: { type: String, required: true, trim: true },
   level: {type: Number, required: true, default: 0},
   experience: {type: Number, required: true, default: 0},
-  systemLogs: [{
-    title: { type: String, required: true, trim: true},
-    description: { type: String, required: true, trim: true},
-    createdAt: { type: Date, default: Date.now, required: true },
-  }],
+  systemLogs: [{ type: Schema.Types.ObjectId, ref: 'Message'}],
   skillSlots: {type: Number, required: true, default: 5},
   difficulty: { type: Schema.Types.ObjectId, ref: 'Difficulty', required: true },
   race: { type: String, default: "Human" },
@@ -25,9 +21,9 @@ const userSchema = new Schema({
     lastPracticed: { type: Date },
     practicing: {type: Boolean, default: false, required: true},
     practicingLogs: [{
-        start: { type: Date, default: null },
-        end: { type: Date, default: null },
-        practiceDescription: { type: String, required: false, trim: true },
+        start: { type: Date },
+        end: { type: Date },
+        practiceDescription: { type: String, trim: true },
         expGained: {type: Number, required: true}
     }],
     addedAt: {type: Date, required: true, default: Date.now},
@@ -47,6 +43,7 @@ const userSchema = new Schema({
   }],
   registrationDate: { type: Date, default: Date.now, required: true },
   lastLoginDate: { type: Date, default: Date.now, required: true },
+  admin: {type: Boolean, default: false, required: true}
 });
 
 const User = mongoose.model('User', userSchema);

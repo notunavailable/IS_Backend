@@ -8,7 +8,8 @@ const difficultySchema = new Schema({
   multiplier: {type: Number, unique: true, required: true},
   createdAt: { type: Date, default: Date.now, required: true },
   updatedAt: { type: Date, default: Date.now, required: true },
-  color: {type: String, required: true}
+  color: {type: String, required: true},
+  levelXP: {type: Number, required: true}
 });
 
 const Difficulty = mongoose.model('Difficulty', difficultySchema);

@@ -162,7 +162,7 @@ const createSkill = async ({ skillDescription, attributesList }) => {
 
 const getSystemMessage = async ({ messageReason }) => {
     try {
-        const specifics = `${messageReason} Write a snarky and funny system message to alert the user.`;
+        const specifics = `${messageReason} Send a snarky and funny system message to alert the user.`;
 
         const completion = await openai.createChatCompletion({
             model: "gpt-4-0613",

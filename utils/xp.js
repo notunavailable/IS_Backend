@@ -5,23 +5,17 @@ const Skill = require("../models/Skill.js")
 const calculateLevelExp = async ({difficultyId, currentLevel}) => {
     const difficulty = await Difficulty.findOne({ difficulty: difficultyId });
     if (difficulty) {
-        const xp = difficulty.level0 * (difficulty.multiplier ^ currentLevel)
+        const xp = difficulty.level0 * (difficulty.multiplier ** currentLevel);
         return xp;
     } else {
-        throw new Error("Invalid difficulty provided.");
+        console.error("Invalid difficulty provided");
     }
 }
 
 const calculateExp = ({start, end}) => {
     let calculateTimeInMillis = end.getTime() - start.getTime();
     let calculateTimeInMinutes = Math.floor(calculateTimeInMillis / (1000 * 60)); 
-
-    console.log(`Interval in Milliseconds: ${calculateTimeInMillis}`);
-    console.log(`Time in Minutes: ${calculateTimeInMinutes}`);
-
     let xp = Math.floor(calculateTimeInMinutes / 3); 
-
-    console.log(`Calculated XP: ${xp}`);
     return xp;
 }
 
@@ -58,15 +52,18 @@ async function populateDifficulties() {
     }
 }
 
-addXP = async ({user, xp}) => {
+const addXP = async ({user, xp}) => {
     const currentLevel = user.level;
     let levelXP = await calculateLevelExp({difficultyId: user.difficulty, currentLevel: currentLevel+1})
     user.experience += xp;
+    console.log("xp: ", xp)
     while(user.experience >= levelXP){
         user.experience -= levelXP;
         user.level++;
         levelXP = await calculateLevelExp({difficultyId: user.difficulty, currentLevel: currentLevel+1})
     }
+    console.log("experience: ", user.experience);
+    console.log("level: ", user.level)
 }
 
 const addSkillXP = async ({xp, user, skillIndex}) => {

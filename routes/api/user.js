@@ -11,11 +11,12 @@ const Queue = require('../../models/UnregisteredQueue.js')
 const Category = require("../../models/Category.js");
 
 //utils
-const { getSkillName, createSkill, createAttribute, getSystemMessage } = require("../../utils/chatgpt.js")
+const { getSkillName, createSkill, createAttribute } = require("../../utils/chatgpt.js")
 const { calculateExp, calculateLevelExp, addSkillXP } = require("../../utils/xp.js")
 
 //controllers
 const { completeSkill } = require('../../controllers/skillController.js')
+const {addMessage} = require("../../controllers/messageController.js")
 
 //Register User
 router.post('/register', async (req, res) => {
@@ -138,6 +139,30 @@ router.get("/skills/:id", async (req, res) => {
     }
 });
 
+router.get("/messages/:id", async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await User.findById(userId).populate("systemLogs")
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+        let messages = [];
+        for(let i = user.systemLogs.length-1; i >= 0; i--){
+            if(!user.systemLogs[i].seen){
+                messages.push(user.systemLogs[i])
+            } else {
+                break;
+            }
+        }
+        await user.save();
+        res.status(200).send({ message: 'Practice state updated successfully', messages: messages });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: 'Internal server error.' });
+    }
+})
+
 // Calculate XP Gain
 router.put("/practice/:id", async (req, res) => {
     try {
@@ -170,17 +195,18 @@ router.put("/practice/:id", async (req, res) => {
                 const currentSkillLevel = user.skills[skillIndex].level;
                 const currentLevel = user.level;
                 await addSkillXP({ xp: xp, user: user, skillIndex: skillIndex });
-                let messageReason;
                 const skill = await Skill.findById(user.skills[skillIndex].id)
-                if (currentLevel < user.level) {
-                    const levelDiff = user.level - currentLevel;
-                    messageReason = `The user has leveled up by ${levelDiff}.`
-                }
                 if (currentSkillLevel < user.skills[skillIndex].level) {
                     const levelDiff = user.skills[skillIndex].level - currentLevel;
-                    messageReason = `The user has leveled up the skill ${skill} by ${levelDiff}. ${messageReason}`
+                    const messageReason = `The user has gained ${xp} experience in the skill ${skill.name}. The user has leveled up the skill ${skill.name} by ${levelDiff}.`
+                    await addMessage({userId: userId, messageReason: messageReason})
                 }
-                messageReason = `The user has gained ${xp} experience in the skill ${skill.name}. ${messageReason}`
+                if (currentLevel < user.level) {
+                    const levelDiff = user.level - currentLevel;
+                    const messageReason = `The user has leveled up by ${levelDiff}. They are now level ${user.level}.`
+                    await addMessage({userId: userId, messageReason: messageReason})
+                }
+                
                 let practiceData = {
                     start: user.skills[skillIndex].lastPracticed,
                     end: currentTime,
@@ -197,8 +223,7 @@ router.put("/practice/:id", async (req, res) => {
             user.skills[skillIndex].practicing = true;
             user.skills[skillIndex].lastPracticed = currentTime;
         }
-
-        user.markModified('skills');
+        console.log("experience: ", user.experience)
         await user.save();
         res.status(200).send({ message: 'Practice state updated successfully', user: user });
 
