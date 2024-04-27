@@ -3,6 +3,7 @@ import skill from './api/skill.mjs';
 import user from './api/user.mjs';
 import userSkills from './api/user-skills.mjs'
 import connectDB from './db.mjs';
+import cors from 'cors';
 import './config.mjs';
 
 
@@ -13,7 +14,7 @@ const port = process.env.PORT || 5001;
 app.use(express.json());
 // Middleware to parse URL-encoded bodies
 app.use(express.urlencoded({ extended: false }));
-
+app.use(cors({ origin: 'https://infinitseed.com' }));
 connectDB();  // Connect to the database
 
 // Set up API routes
