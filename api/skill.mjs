@@ -17,19 +17,4 @@ router.get('/', async (req, res) => {
     return res.status(200).send(skills);
 })
 
-router.put('/track/:id', async (req, res) => {
-    try {
-        const skill = await Skill.findById(req.params.id);
-        if (!skill) {
-            return res.status(404).send({ message: "Skill not found" });
-        }
-        const updatedSkill = await Skill.findByIdAndUpdate(req.params.id, {
-            tracking: !skill.tracking
-        }, { new: true }); // `new: true` to return the updated document
-
-        res.status(200).send(updatedSkill);
-    } catch (error) {
-        res.status(500).send({ message: "Server error", error: error.message });
-    }
-});
 export default router;
